@@ -18,9 +18,7 @@ fn main() {
     let _ = rom.read(&mut buf).unwrap();
     cpu.load(&buf);
 
-    loop {
-        cpu.tick();
-
+    while cpu.tick() {
         thread::sleep(Duration::from_millis(7));
     }
 }

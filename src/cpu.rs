@@ -58,7 +58,10 @@ impl<R: Read> CPU<R> {
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> bool {
+        if self.terminal.exit {
+            return false;
+        }
         let instruction = self.read_instruction();
         self.execute_instruction(instruction);
         if self.dt > 0 {
@@ -68,6 +71,7 @@ impl<R: Read> CPU<R> {
             self.st -= 1
         }
         self.terminal.render();
+        true
     }
 
     pub fn load(&mut self, data: &[u8]) {

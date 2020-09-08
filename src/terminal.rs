@@ -11,6 +11,7 @@ pub struct Terminal<R: TermRead> {
     stdin: Keys<R>,
     pixels: [u64; 32],
     unprocessed: Vec<u8>,
+    pub exit: bool,
 }
 
 struct BitIterator {
@@ -39,10 +40,10 @@ impl<R: Read> Terminal<R> {
     pub fn new(r: R) -> Self {
         let mut term = Terminal {
             stdout: stdout().into_raw_mode().unwrap(),
-            // stdin: async_stdin().keys(),
             stdin: r.keys(),
             pixels: [0; 32],
             unprocessed: Vec::new(),
+            exit: false,
         };
         term.clear();
         write!(term.stdout, "{}", cursor::Hide).unwrap();
@@ -100,7 +101,7 @@ impl<R: Read> Terminal<R> {
 
         while let Some(Ok(k)) = self.stdin.next() {
             if k == Key::Ctrl('c') {
-                exit(0);
+                self.exit = true;
             }
             match Self::map_key(k) {
                 Some(key) if key == expected => {
@@ -118,7 +119,7 @@ impl<R: Read> Terminal<R> {
     pub fn wait_for_key_press(&mut self) -> Option<u8> {
         if let Some(Ok(k)) = self.stdin.next() {
             if k == Key::Ctrl('c') {
-                exit(0);
+                self.exit = true;
             }
             match Self::map_key(k) {
                 Some(key) => Some(key),
