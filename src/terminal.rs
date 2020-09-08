@@ -10,6 +10,7 @@ pub struct Terminal<R: TermRead> {
     stdout: RawTerminal<Stdout>,
     stdin: Keys<R>,
     pixels: [u64; 32],
+    unprocessed: Vec<u8>,
 }
 
 struct BitIterator {
@@ -41,6 +42,7 @@ impl<R: Read> Terminal<R> {
             // stdin: async_stdin().keys(),
             stdin: r.keys(),
             pixels: [0; 32],
+            unprocessed: Vec::new(),
         };
         term.clear();
         write!(term.stdout, "{}", cursor::Hide).unwrap();
@@ -88,16 +90,28 @@ impl<R: Read> Terminal<R> {
         }
     }
 
-    pub fn check_if_pressed(&mut self, key_value: u8) -> bool {
+    pub fn check_if_pressed(&mut self, expected: u8) -> bool {
+        for (i, &key) in self.unprocessed.iter().enumerate() {
+            if key == expected {
+                let _: Vec<_> = self.unprocessed.drain(0..=i).collect();
+                return true;
+            }
+        }
+
         while let Some(Ok(k)) = self.stdin.next() {
             if k == Key::Ctrl('c') {
                 exit(0);
             }
             match Self::map_key(k) {
-                Some(key) if key == key_value => return true,
+                Some(key) if key == expected => {
+                    self.unprocessed.clear();
+                    return true;
+                }
+                Some(key) => self.unprocessed.push(key),
                 _ => (),
             }
         }
+
         false
     }
 
