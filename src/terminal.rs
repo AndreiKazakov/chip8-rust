@@ -80,7 +80,7 @@ impl<R: Read> Terminal<R> {
                 row %= 32;
             }
             let new_line = self.pixels[row] ^ (u64::from_be(byte as u64).rotate_right(x as u32));
-            overwritten = self.pixels[row] & new_line != self.pixels[row];
+            overwritten = overwritten || self.pixels[row] & new_line != self.pixels[row];
             self.pixels[row] = new_line;
             row += 1;
         }
