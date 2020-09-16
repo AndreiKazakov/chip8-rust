@@ -68,6 +68,7 @@ impl<R: Read> Terminal<R> {
 
     pub fn clear(&mut self) {
         write!(self.stdout, "{}", termion::clear::All).unwrap();
+        self.pixels = [0; 32];
         self.stdout.flush().unwrap();
     }
 
