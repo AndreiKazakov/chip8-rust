@@ -58,16 +58,16 @@ impl<R: Read> CPU<R> {
         }
     }
 
-    pub fn tick(&mut self) -> bool {
+    pub fn tick(&mut self, update_timers: bool) -> bool {
         if self.terminal.exit {
             return false;
         }
         let instruction = self.read_instruction();
         self.execute_instruction(instruction);
-        if self.dt > 0 {
+        if self.dt > 0 && update_timers {
             self.dt -= 1
         }
-        if self.st > 0 {
+        if self.st > 0 && update_timers {
             self.st -= 1
         }
         self.terminal.render();
