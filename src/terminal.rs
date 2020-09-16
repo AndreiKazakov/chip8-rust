@@ -53,12 +53,11 @@ impl<R: Read> Terminal<R> {
     pub fn render(&mut self) {
         for (y, &line) in self.pixels.iter().enumerate() {
             for (x, bit) in BitIterator::new(line).enumerate() {
-                let char = if bit { '█' } else { ' ' };
                 write!(
                     self.stdout,
                     "{}{}",
                     cursor::Goto(x as u16 + 1, y as u16 + 1),
-                    char
+                    if bit { '█' } else { ' ' }
                 )
                 .unwrap();
             }
